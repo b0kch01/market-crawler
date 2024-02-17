@@ -1,6 +1,5 @@
 from CrawlerTools import scrape_page_text
 from CrawlerTools import get_google_alert_links
-
 from selenium import webdriver
 
 if __name__ == '__main__':
