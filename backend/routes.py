@@ -7,6 +7,7 @@ from models import FoodHall
 
 app = Flask(__name__)
 
+
 @app.route("/")
 def hello_world():
     res = {
@@ -15,11 +16,13 @@ def hello_world():
     }
     return res
 
+
 @app.route("/crawler/<search_key>")
 def google_search(search_key):
     driver = webdriver.Chrome()
     links = CrawlerTools.make_google_search(search_key, driver)
     return links
+
 
 @app.route("/crawler/research/<food_hall_name>")
 def google_search(food_hall_name):

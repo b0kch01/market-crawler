@@ -5,7 +5,7 @@ import { api } from '@/../convex/_generated/api';
 
 export default function Home() {
 
-  const halls = useQuery(api.findings.get);
+  const halls = useQuery(api.findings.getAll);
 
   return (
     <main class="flex flex-col justify-center items-center min-h-screen w-full">
