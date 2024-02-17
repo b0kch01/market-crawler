@@ -3,8 +3,13 @@
 import React, { createContext, useState, useEffect } from 'react'
 
 const DataContext = createContext()
+const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL)
+
 
 export const DataContextProvider = ({ children }) => {
+
+
+
   return <DataContext.Provider value={data}>{children}</DataContext.Provider>
 }
 
