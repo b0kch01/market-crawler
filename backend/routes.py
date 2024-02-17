@@ -1,11 +1,28 @@
-from flask import Flask
+from flask import Flask, request, Response
 from webcrawler import CrawlerTools
 from selenium import webdriver
 from models import FoodHall
 
+import os
+from dotenv import load_dotenv
+from convex import ConvexClient
+
+load_dotenv(".env.local")
+load_dotenv()
+
+client = ConvexClient(os.getenv("CONVEX_URL"))
+
 # flask --app main run
 
 app = Flask(__name__)
+
+
+@app.post("/db/add")
+async def add_food_hall():
+    if not request.json:
+        return Response("No data provided", status=400)
+
+    await client.mutation("findings:createFoodHall", request.json)
 
 
 @app.route("/")
@@ -17,16 +34,20 @@ def hello_world():
     return res
 
 
-@app.route("/crawler/<search_key>")
+@app.get("/crawler/<search_key>")
 def google_search(search_key):
     driver = webdriver.Chrome()
     links = CrawlerTools.make_google_search(search_key, driver)
     return links
 
 
-@app.route("/crawler/research/<food_hall_name>")
-def google_search(food_hall_name):
+@app.get("/crawler/research/<food_hall_name>")
+def research(food_hall_name):
     driver = webdriver.Chrome()
 
     links = CrawlerTools.make_google_search(food_hall_name, driver)
     return links
+
+
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=3333)
