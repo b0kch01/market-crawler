@@ -13,7 +13,7 @@ export default function Home() {
         halls == undefined ? <span>Loading...</span> :
           halls.map(({ _id, _creationTime, name }) => {
             return (
-              <span id={_id} class="flex gap-4 border">
+              <span key={_id} class="flex gap-4 border">
                 <span>{(new Date(_creationTime)).toLocaleTimeString()}</span>
                 <span>{name}</span>
               </span>
