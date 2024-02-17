@@ -24,5 +24,6 @@ def google_search(search_key):
 @app.route("/crawler/research/<food_hall_name>")
 def google_search(food_hall_name):
     driver = webdriver.Chrome()
+
     links = CrawlerTools.make_google_search(food_hall_name, driver)
     return links
