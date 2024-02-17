@@ -18,11 +18,12 @@ app = Flask(__name__)
 
 
 @app.post("/db/add")
-async def add_food_hall():
+def add_food_hall():
     if not request.json:
         return Response("No data provided", status=400)
 
-    await client.mutation("findings:createFoodHall", request.json)
+    client.mutation("findings:createFoodHall", request.json)
+    return "done"
 
 
 @app.route("/")
