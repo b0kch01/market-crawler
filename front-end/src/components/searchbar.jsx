@@ -41,7 +41,7 @@ const SearchBar = () => {
   };
 
   return (
-    <div className="flex w-full h-[50px] items-center gap-2 space-x-2 py-[60px]">
+    <div className="flex w-full h-[50px] items-center gap-2 space-x-2 py-[60px] px-[10vw]">
       <div className="flex grow items-center h-[56px] outline outline-1 outline-[#c0c3c5] px-5 bg-white rounded-2xl">
         <img src='glass.svg' alt='Search' className='w-6 h-6' />
         <input
@@ -54,9 +54,9 @@ const SearchBar = () => {
         />
       </div>
       <div onClick={handleButtonClick}>
-        <Button className='h-[56px] w-[139px] gap-2 bg-[#FF6B00] rounded-2xl' type="button"> {/* Changed type to "button" */}
-          <img src='sparkle.svg' alt='Search' /> {/* Added alt text */}
-          <span className='text-base'>Search</span>
+        <Button className='h-[56px] w-[200px] gap-2 bg-[#FF6B00] rounded-2xl' type="button"> {/* Changed type to "button" */}
+          <img src='sparkle.svg' alt='crawl' /> {/* Added alt text */}
+          <span className='text-base'>New Crawler</span>
         </Button>
       </div>
     </div>

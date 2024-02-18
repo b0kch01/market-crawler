@@ -3,7 +3,9 @@ import { api } from '@/../convex/_generated/api';
 import {
   ChevronDownIcon
 } from "@radix-ui/react-icons";
-
+import { useRouter } from 'next/router';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -49,9 +51,10 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
+import { set } from 'date-fns';
 
 
-export const columns = [
+const columns = [
   {
     id: "select",
     header: ({ table }) => (
@@ -82,15 +85,54 @@ export const columns = [
     cell: ({ row }) => {
       return (
         <SheetTrigger>
-          <div className="text-left font-medium">{row.getValue("name")}</div>
+          <div className="text-left font-medium hover:underline">{row.getValue("name")}</div>
         </SheetTrigger>
       )
+    }
+  },
+  {
+    accessorKey: "_creationTime",
+    header: () => <div className="text-left">Last Updated</div>,
+    cell: ({ row }) => {
+      // Time elapsed
+      let epoch = row.getValue("_creationTime");
+      let now = new Date();
+      let then = new Date(epoch);
+      let elapsed = now - then;
+      let seconds = Math.floor(elapsed / 1000);
+      let minutes = Math.floor(seconds / 60);
+      let hours = Math.floor(minutes / 60);
+      let days = Math.floor(hours / 24);
+
+      if (days > 0) {
+        return <div className="text-left">{days} days ago</div>
+      }
+
+      if (hours > 0) {
+        return <div className="text-left">{hours} hour{hours > 1 ? "s" : ""} ago</div>
+      }
+
+      if (minutes > 0) {
+        return <div className="text-left">{minutes} minutes ago</div>
+      }
+
+      if (seconds > 0) {
+        return <div className="text-left">{seconds} seconds ago</div>
+      }
+
+      return <div className="text-left">Just now</div>
     }
   },
   {
     accessorKey: "city",
     header: () => <div className="text-left">City</div>,
     cell: ({ row }) => {
+      let city = row.getValue("city");
+
+      if (!city) {
+        return <div className="text-left">N/A</div>
+      }
+
       return <div className="text-left">{row.getValue("city")}</div>
     }
   },
@@ -138,13 +180,14 @@ export const columns = [
   }
 ]
 
+
 export function DataTableDemo() {
   const [sorting, setSorting] = React.useState([])
   const [columnFilters, setColumnFilters] = React.useState([])
   const [columnVisibility, setColumnVisibility] = React.useState({})
   const [rowSelection, setRowSelection] = React.useState({})
 
-  const [focusedData, setFocusedData] = React.useState({})
+  const [focusedID, setFocusedID] = React.useState(null)
 
   const data = useQuery(api.findings.getAll)
 
@@ -168,21 +211,21 @@ export function DataTableDemo() {
   })
 
   if (!table || !data) {
-    return <p>Loading</p>
+    return <span></span>
   }
 
   return (
     <Sheet>
-      <SheetContent className="overflow-y-scroll h-full p-0">
+      <SheetContent className="overflow-y-scroll h-full p-0 max-w-xl">
         <SheetClose className="absolute top-0 z-30 p-4">
-          <ChevronsRight className="bg-white shadow-md border rounded" />
+          <ChevronsRight className="bg-white shadow-md border rounded-lg p-2 text-muted-foreground hover:opacity-80 transition-all" width={40} height={40} />
         </SheetClose>
-        <NeighborhoodsInfo data={focusedData} />
+        <NeighborhoodsInfo data={data.find((d) => d._id === focusedID)} />
       </SheetContent>
       <div className="w-full">
         <div className="flex items-center py-4">
           <Input
-            placeholder="Vector match..."
+            placeholder="Quick Find..."
             value={table.getColumn("name")?.getFilterValue() ?? ""}
             onChange={event =>
               table.getColumn("name")?.setFilterValue(event.target.value)
@@ -241,6 +284,9 @@ export function DataTableDemo() {
                     <TableRow
                       key={row.id}
                       data-state={row.getIsSelected() && "selected"}
+                      onClick={() => {
+                        setFocusedID(row.original._id)
+                      }}
                     >
                       {row.getVisibleCells().map(cell => (
                         <TableCell key={cell.id}>

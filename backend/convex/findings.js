@@ -30,13 +30,17 @@ export const updateFoodHall = mutation({
       retail: v.optional(v.union(v.number(), v.null())),
       management_company: v.optional(v.string()),
       parking_spots: v.optional(v.number()),
-      parking_fees: v.optional(v.string()),
+      parking_fees: v.optional(v.union(v.string(), v.null())),
       peak_time_availability: v.optional(v.string()),
       contact: v.optional(v.string()),
       owner: v.optional(v.string()),
       images: v.optional(v.array(v.object({
         url: v.string(),
         alt: v.optional(v.string()),
+      }))),
+      sources: v.optional(v.array(v.object({
+        source: v.string(),
+        label: v.optional(v.string()),
       }))),
       occupancy_rate: v.optional(v.string()),
       types_of_food_stalls: v.optional(v.array(v.string())),

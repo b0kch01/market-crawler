@@ -139,7 +139,7 @@ def get_images(foodhall: str, browser) -> list[str]:
         time.sleep(2)  # Adjust sleep time as necessary
 
         # Find image elements - Adjust the selector if necessary
-        images = browser.find_elements(By.CSS_SELECTOR, 'a > div > img')
+        images = browser.find_elements(By.CSS_SELECTOR, 'a > div > img[width]')
         image_urls = []
         for image in images:
             # Get the src of the image

@@ -21,8 +21,11 @@ app = Flask(__name__)
 def start_new_crawl(search_key):
 
     def task(client, search_key: str):
-        id = client.mutation("findings:createFoodHall", {"name": search_key})
-        ResearchHall.run_in_parallel(search_key, id, client=client)
+        id = client.mutation("findings:createFoodHall", {
+                             "name": search_key.title()})
+        hall = ResearchHall.ResearchHall(client, id, search_key.title())
+        hall.run_in_parallel()
+        print("Done!")
 
     threading.Thread(target=task, args=(client, search_key)).start()
 
