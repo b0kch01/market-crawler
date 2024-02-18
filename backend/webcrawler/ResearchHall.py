@@ -1,10 +1,13 @@
-from webcrawler.CrawlerTools import make_google_search
-from webcrawler.CrawlerTools import scrape_page_text
+from CrawlerTools import make_google_search
+from CrawlerTools import scrape_page_text
 from selenium import webdriver
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
 import requests
+import threading
+import tkinter
+
 
 load_dotenv()
 open_ai_key = os.getenv('GPT_API_KEY')
@@ -47,8 +50,7 @@ def get_location(food_hall: str, browser):  # google maps API
     """returns location of food hall"""
     res = None
     location_instruction = "You are a market researcher and you are helping me find information about certain food halls."
-    prompt = f'Given this text content, help me figure out the location of this food hall ({food_hall}), make sure answer is in form like "city, state" like Irvine, CA: '
-
+    prompt = f'Given this text content, determine the location of the food hall "{food_hall}"'+'. return the response as raw json: {"city": "CityName", "state": "StateCode"}'
     google_link = make_google_search(f'{food_hall} location', browser, 1)[0]
     try:
         webcontent = scrape_page_text(google_link, browser)
@@ -63,7 +65,7 @@ def get_square_footage(food_hall: str, browser):
     """returns get_square_footage of food hall"""
     res = None
     location_instruction = "You are a market researcher and you are helping me find information about certain food halls."
-    prompt = f'Given this text content, help me figure out the square footage of this food hall ({food_hall}), make sure answer is in form like "10000" (int, JUST THE NUMBER). If you cannot find data, then return "None": '
+    prompt = f'Given this text content, determine the square footage of "{food_hall}"'+ '. return the response as raw json: {"square_footage": 10000} or {"square_footage": null} if data is unavailable.'
 
     google_link = make_google_search(
         f'{food_hall} square footage', browser, 1)[0]
@@ -76,7 +78,7 @@ def get_square_footage(food_hall: str, browser):
 def get_number_of_food_stalls(food_hall: str, browser):
     """returns number of food, bar, and retail stalls of food hall"""
     location_instruction = "You are a market researcher and you are helping me find information about certain food halls."
-    prompt = f'Given this text content, help me figure out the number of food stalls, bar stalls, and retail stalls in this food hall ({food_hall}), make sure answer is in form like "food:3,bars:4,retail:3" (str:int,str:int,str:int) JUST THIS. If you cannot find data, then return "None": '
+    prompt = f'Given this text content, determine the number of food stalls, bar stalls, and retail stalls in "{food_hall}"'+'. return the response as raw json: {"food": 3, "bars": 4, "retail": 3} or {"data": null} if information is not available.'
 
     google_link = make_google_search(
         f'{food_hall} number of food stalls', browser, 1)[0]
@@ -91,7 +93,7 @@ def get_number_of_food_stalls(food_hall: str, browser):
 def get_types_of_food_stalls(food_hall: str, browser):
     """Returns types of food stalls in food hall"""
     instruction = "You are a market researcher and you are helping me find information about the types of food stalls in certain food halls."
-    prompt = f'Given this text content, help me list the types of food stalls available in this food hall ({food_hall}). Provide the types in a list format, e.g., ["Mexican", "Italian", "Japanese"]. If you cannot find data, then return "None": '
+    prompt = f'Given this text content, list the types of food stalls available in "{food_hall}"'+'. return the response as raw json: {"types_of_food_stalls": ["Mexican", "Italian", "Japanese"]} or {"types_of_food_stalls": null} if no data is found.'
 
     google_link = make_google_search(
         f'{food_hall} types of food stalls', browser, 1)[0]
@@ -104,7 +106,7 @@ def get_types_of_food_stalls(food_hall: str, browser):
 def get_demographic(food_hall: str, browser):
     """Returns demographic information of the area surrounding the food hall."""
     instruction = "You are a market researcher and you are tasked with gathering demographic information about the area surrounding a specific food hall."
-    prompt = f'Analyze the text content to provide demographic information (population density, median income, age distribution) of the area surrounding the food hall ({food_hall}). If you cannot find specific data, provide a general overview based on available information: '
+    prompt = f'Analyze this text content to provide demographic information of the area surrounding "{food_hall}"'+'. return the response as raw json: {"population_density": "100/sq.miles", "median_income": "10000", "age_distribution": {"0-10": "10%", "11-24": "30%"}} or {"data": null} if specifics are unavailable.'
 
     google_link = make_google_search(
         f'{food_hall} area demographics', browser, 1)[0]
@@ -117,7 +119,7 @@ def get_demographic(food_hall: str, browser):
 def get_local_area_composition(food_hall: str, browser):
     """Returns information on the local area composition around the food hall."""
     instruction = "You are a market researcher and your objective is to understand the composition of the area surrounding a food hall."
-    prompt = f'Evaluate the text content to describe the mix of residential and commercial areas, and the presence of parks, schools, or other notable amenities near the food hall ({food_hall}). Summarize the findings succinctly: '
+    prompt = f'Evaluate the text content to describe the area composition around "{food_hall}"' + '. return the response as raw json: {"composition": ["office", "retail", "residential"]} or {"composition": null} if data is not available.'
 
     google_link = make_google_search(
         f'{food_hall} surrounding area composition', browser, 1)[0]
@@ -130,7 +132,7 @@ def get_local_area_composition(food_hall: str, browser):
 def get_public_transport(food_hall: str, browser):
     """Returns public transport options available near the food hall."""
     instruction = "You are a market researcher, aiming to find out about public transport options available near a food hall."
-    prompt = f'Gather and summarize information about the nearby bus stops, train stations, and their service routes for the food hall ({food_hall}). If data is scarce, provide an overview of the public transport accessibility based on available information: '
+    prompt = f'Summarize information about nearby public transport for "{food_hall}"'+'. return the response as raw json: {"public_transport": ["bus", "train", "bike"]} or {"public_transport": null} if information is scarce.'
 
     google_link = make_google_search(
         f'{food_hall} public transport options', browser, 1)[0]
@@ -143,7 +145,7 @@ def get_public_transport(food_hall: str, browser):
 def get_parking_availability(food_hall: str, browser):
     """Returns parking availability information for the food hall."""
     instruction = "You are a market researcher focusing on parking availability for a particular food hall."
-    prompt = f'Analyze the text to provide details on the number of parking spots, parking fees, and peak time availability for the food hall ({food_hall}). If such data is not available, suggest based on the context: '
+    prompt = f'Provide details on parking at "{food_hall}".'+' return the response as raw json: {"parking_spots": 1000, "parking_fees": "$5/hr", "peak_time_availability": "10:00am"} or {"data": null} if unavailable.'
 
     google_link = make_google_search(
         f'{food_hall} parking availability', browser, 1)[0]
@@ -156,7 +158,7 @@ def get_parking_availability(food_hall: str, browser):
 def get_foot_traffic_estimates(food_hall: str, browser):
     """Returns foot traffic estimates near the food hall."""
     instruction = "As a market researcher, your task is to estimate the foot traffic around a specific food hall."
-    prompt = f'Deduce from the content the average daily or hourly foot traffic, including peak times, near the food hall ({food_hall}). If direct estimates are unavailable, provide an educated guess based on available information: '
+    prompt = f'Determine the average foot traffic near "{food_hall}".'+' return the response as raw json: {"foot_traffic": "100/hr"} or {"foot_traffic": "1000/day"} or {"data": null} if estimates are not directly available.'
 
     google_link = make_google_search(
         f'{food_hall} foot traffic estimates', browser, 1)[0]
@@ -169,7 +171,7 @@ def get_foot_traffic_estimates(food_hall: str, browser):
 def get_annual_visitor_count(food_hall: str, browser):
     """Returns the annual visitor count of the food hall."""
     instruction = "You are tasked with finding the annual visitor count for a food hall as part of a market research project."
-    prompt = f'Extract and summarize information on the total number of visitors in a year and, if available, a comparison with previous years for the food hall ({food_hall}). If no specific numbers are found, provide an overview based on the context: '
+    prompt = f'Extract information on annual visitor count for "{food_hall}"'+'. return the response as raw json: {"annual_visitor_count": 1000000} or {"data": null} if no specific numbers are found.'
 
     google_link = make_google_search(
         f'{food_hall} annual visitor count', browser, 1)[0]
@@ -182,7 +184,7 @@ def get_annual_visitor_count(food_hall: str, browser):
 def get_lease_rates(food_hall: str, browser):
     """Returns lease rates for the food hall."""
     instruction = "Your objective as a market researcher is to determine the lease rates for spaces within a specific food hall."
-    prompt = f'Please provide the average lease rate per square foot and, if possible, a comparison with market rates for the food hall ({food_hall}). If precise rates are not available, give a general assessment based on the gathered information: '
+    prompt = f'Provide the average lease rate for spaces within "{food_hall}".'+' return the response as raw json: {"lease_rates": "$800/sq.ft"} or {"data": null} if precise rates are not available.'
 
     google_link = make_google_search(f'{food_hall} lease rates', browser, 1)[0]
     webcontent = scrape_page_text(google_link, browser)
@@ -194,7 +196,7 @@ def get_lease_rates(food_hall: str, browser):
 def get_occupancy_rate(food_hall: str, browser):
     """Returns the occupancy rate of the food hall."""
     instruction = "As a market researcher, it's your job to find out the occupancy rate of a given food hall."
-    prompt = f'Analyze the text to provide the percentage of occupied space and compare it with the industry average for the food hall ({food_hall}). If such data is not directly available, make an inference based on available information: '
+    prompt = f'Analyze to provide the occupancy rate for "{food_hall}".'+' return the response as raw json: {"occupancy_rate": "82%"} or {"data": null} if direct data is unavailable.'
 
     google_link = make_google_search(
         f'{food_hall} occupancy rate', browser, 1)[0]
@@ -207,7 +209,7 @@ def get_occupancy_rate(food_hall: str, browser):
 def get_year_established(food_hall: str, browser):
     """Returns the year the food hall was established."""
     instruction = "Your role as a market researcher involves finding out when a food hall was first established."
-    prompt = f'Gather information on the year of establishment and any historical significance for the food hall ({food_hall}). If the exact year is not available, provide a historical overview: '
+    prompt = f'Find out the year of establishment for "{food_hall}".'+' return the response as raw json: {"year_established": 1980} or {"data": null} if the exact year is not available.'
 
     google_link = make_google_search(
         f'{food_hall} year established', browser, 1)[0]
@@ -220,7 +222,7 @@ def get_year_established(food_hall: str, browser):
 def get_renovation_history(food_hall: str, browser):
     """Returns the renovation history of the food hall."""
     instruction = "In your capacity as a market researcher, you are to uncover the renovation history of a food hall."
-    prompt = f'Please detail the dates and types of past renovations, including any permits issued for the food hall ({food_hall}). If comprehensive details are not available, provide a summary based on accessible data: '
+    prompt = f'Detail the renovation history of "{food_hall}".'+' return the response as raw json: {"renovation_history": "Details"} or {"data": null} if comprehensive details are not available.'
 
     google_link = make_google_search(
         f'{food_hall} renovation history', browser, 1)[0]
@@ -233,7 +235,7 @@ def get_renovation_history(food_hall: str, browser):
 def get_owner(food_hall: str, browser):
     """Returns the owner of the food hall."""
     instruction = "Your task as a market researcher is to identify the owner or owning entity of a food hall."
-    prompt = f'Discover and report the name of the owner or owning entity, including contact information for the food hall ({food_hall}). If the owner\'s details are not directly available, suggest likely ownership based on the context: '
+    prompt = f'Identify the owner of "{food_hall}". '+'return the response as raw json: {"owner": "Name", "contact": "ContactInfo"} or {"data": null} if the owner’s details are not directly available.'
 
     google_link = make_google_search(f'{food_hall} owner', browser, 1)[0]
     webcontent = scrape_page_text(google_link, browser)
@@ -245,7 +247,7 @@ def get_owner(food_hall: str, browser):
 def get_management_company(food_hall: str, browser):
     """Returns the management company of the food hall."""
     instruction = "The aim of your market research is to find out which company manages a specific food hall."
-    prompt = f'Please provide information on the name of the management company and the services it offers for the food hall ({food_hall}). If the management company\'s details are not evident, give an overview based on available data: '
+    prompt = f'Find out the management company for "{food_hall}".'+' return the response as raw json: {"management_company": "CompanyName"} or {"data": null} if the details are not evident.'
 
     google_link = make_google_search(
         f'{food_hall} management company', browser, 1)[0]
@@ -259,46 +261,82 @@ def updateDB(id: str, data: dict):
     """Updates the database with the data"""
     requests.post(f'http://localhost:3333/crawler/update/{id}', json=data)
 
+def browser_research(browser, tasks, foodhall):
+    """Executes a list of research tasks using the given browser instance."""
+    for task in tasks:
+        try:
+            # Assuming each task function takes a 'food_hall' string and a 'browser' object
+            # You might need to adjust this call depending on how your task functions are structured
+            task_response = task(foodhall, browser)
+            print(task.__name__ + f': {task_response}')
+        except Exception as e:
+            print(f"Error executing {task.__name__}: {e}")
 
-def main(id: str, name: str, client):
-    # Placeholder for browser initialization (e.g., Selenium WebDriver)
-    # Replace None with actual browser initializer like webdriver.Chrome()
-    browser = webdriver.Chrome()
+def run_in_parallel(foodhall):
+    # Initialize browser instances
+    browser1 = webdriver.Chrome()
+    browser2 = webdriver.Chrome()
+    browser3 = webdriver.Chrome()
+    browser4 = webdriver.Chrome()
 
-    food_hall_name = name
+    # Set window sizes for a 1920x1080 resolution, adjust these values based on your actual screen resolution
+    root = tkinter.Tk()
+    width = root.winfo_screenwidth()//2
+    height = root.winfo_screenheight()//2
+    # width = 1920 // 2
+    # height = 1080 // 2
 
-    # Assuming each function returns a string or JSON for simplicity in printing
-    print("Research Results:")
-    location = get_location(food_hall_name, browser)
-    client.mutation("findings:updateFoodHall", {
-                    "id": id, "location": location})
+    # Position the windows in a 4-quadrant layout
+    # Top-Left
+    browser1.set_window_position(0, 0)
+    browser1.set_window_size(width, height)
 
-    # print("Square Footage:", get_square_footage(food_hall_name, browser))
-    # print("Number of Food Stalls:",
-    #       get_number_of_food_stalls(food_hall_name, browser))
-    # print("Types of Food Stalls:",
-    #       get_types_of_food_stalls(food_hall_name, browser))
-    # print("Demographic Information:", get_demographic(food_hall_name, browser))
-    # print("Local Area Composition:",
-    #       get_local_area_composition(food_hall_name, browser))
-    # print("Public Transport Options:",
-    #       get_public_transport(food_hall_name, browser))
-    # print("Parking Availability:",
-    #       get_parking_availability(food_hall_name, browser))
-    # print("Foot Traffic Estimates:",
-    #       get_foot_traffic_estimates(food_hall_name, browser))
-    # print("Annual Visitor Count:",
-    #       get_annual_visitor_count(food_hall_name, browser))
-    # print("Lease Rates:", get_lease_rates(food_hall_name, browser))
-    # print("Occupancy Rate:", get_occupancy_rate(food_hall_name, browser))
-    # print("Year Established:", get_year_established(food_hall_name, browser))
-    # print("Renovation History:", get_renovation_history(food_hall_name, browser))
-    # print("Owner:", get_owner(food_hall_name, browser))
+    # Top-Right
+    browser2.set_window_position(width, 0)
+    browser2.set_window_size(width, height)
 
-    company = get_management_company(food_hall_name, browser)
-    client.mutation("findings:updateFoodHall", {
-                    "id": id, "managementCompany": company})
+    # Bottom-Left
+    browser3.set_window_position(0, height)
+    browser3.set_window_size(width, height)
+
+    # Bottom-Right
+    browser4.set_window_position(width, height)
+    browser4.set_window_size(width, height)
+
+    # Define the tasks for each browser (quartering the total tasks)
+    all_tasks = [get_location, get_square_footage,get_number_of_food_stalls,get_types_of_food_stalls,get_demographic,get_local_area_composition,get_public_transport,get_parking_availability,get_foot_traffic_estimates,get_annual_visitor_count,get_lease_rates,get_occupancy_rate,get_year_established,get_renovation_history,get_owner,get_management_company]
+    n = len(all_tasks)
+
+    tasks1 = all_tasks[:4]
+    tasks2 = all_tasks[4:8]
+    tasks3 = all_tasks[8:12]
+    tasks4 = all_tasks[12:]
+
+    # Create and start threads for each set of tasks
+    thread1 = threading.Thread(target=browser_research, args=(browser1, tasks1,foodhall))
+    thread2 = threading.Thread(target=browser_research, args=(browser2, tasks2,foodhall))
+    thread3 = threading.Thread(target=browser_research, args=(browser3, tasks3,foodhall))
+    thread4 = threading.Thread(target=browser_research, args=(browser4, tasks4,foodhall))
+
+    thread1.start()
+    thread2.start()
+    thread3.start()
+    thread4.start()
+
+    # Wait for all threads to complete
+    thread1.join()
+    thread2.join()
+    thread3.join()
+    thread4.join()
+
+    # Close browsers after completing tasks
+    browser1.quit()
+    browser2.quit()
+    browser3.quit()
+    browser4.quit()
+
+    pass
 
 
 if __name__ == '__main__':
-    main()
+    run_in_parallel('alton food hall')
