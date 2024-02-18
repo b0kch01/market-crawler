@@ -34,28 +34,20 @@ class FoodHall:
 
         # pass this in
         self.name = name
-        # google search
         self.city = city
         self.state = state
         self.square_footage = square_footage
-        # food hall website
         self.number_food_stalls = number_food_stalls
         self.types_of_food_stalls = types_of_food_stalls
-        # us bereasu in area
         self.demographic = demographic
-        # google maps / map apis
         self.local_area_composition = local_area_composition
         self.public_transport = public_transport
         self.parking_availability = parking_availability
-        # placr.ai
         self.foot_traffic_estimates = foot_traffic_estimates
         self.annual_visitor_count = annual_visitor_count
-        # loopnet
         self.lease_rates = lease_rates
         self.occupancy_rate = occupancy_rate
-        # google search
         self.year_established = year_established
         self.renovation_history = renovation_history
-        # google search loop
         self.owner = owner
         self.management_company = management_company

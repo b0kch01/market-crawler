@@ -106,10 +106,31 @@ def scrape_page_text(url:str, browser) -> str:
 
     finally:
         # Make sure to close the browser
-        browser.quit()
+        pass
 
     return text
 
+def get_all_tags_links_on_page(url:str, browser) -> list[str]:
+    """returns all links on page of website -> great for smart navigation"""
+    res = []
+    try:
+        browser.get(url)
+        wait = WebDriverWait(browser, 5)
+        # wait.until(EC.visibility_of_element_located((By.ID, 'app')))
+
+        # Wait for the page to completely render
+
+        # Optional: wait a bit for surety (not the best practice, but works as a last resort)
+        time.sleep(12)
+        links = browser.find_elements(By.CSS_SELECTOR, 'a')
+        print(links)
+        for link in links:
+            res.append({'label':link.text, 'link':link.get_attribute('href')})
+    finally:
+        pass
+
+    return res;
+
 if __name__ == '__main__':
     browser = webdriver.Chrome()
-    print(make_google_search("hamster"))
+    print(get_all_tags_links_on_page('https://altoneats.com/',browser))
