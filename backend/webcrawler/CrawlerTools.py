@@ -131,6 +131,30 @@ def get_all_tags_links_on_page(url:str, browser) -> list[str]:
 
     return res;
 
+def get_images(foodhall:str, browser)->list[str]:
+    """given google search link, return photo images of food hall"""
+    try:
+        search_url = f'https://www.google.com/search?hl=en&tbm=isch&q={foodhall}'
+        browser.get(search_url)
+        # Wait for images to load
+        time.sleep(2)  # Adjust sleep time as necessary
+
+        # Find image elements - Adjust the selector if necessary
+        images = browser.find_elements(By.CSS_SELECTOR, 'img')
+        image_urls = []
+        for image in images:
+            # Get the src of the image
+            src = image.get_attribute('src')
+            if src and (src.endswith('.png') or src.endswith('.jpeg') or src.endswith('.jpg')):
+                image_urls.append(src)
+            if len(image_urls) == 10:
+                break;
+
+        return image_urls
+    finally:
+        pass
+
+
 if __name__ == '__main__':
     browser = webdriver.Chrome()
-    print(get_all_tags_links_on_page('https://altoneats.com/',browser))
+    print(get_images('alton food hall',browser))

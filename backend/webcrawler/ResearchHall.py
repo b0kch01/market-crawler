@@ -1,5 +1,6 @@
 from CrawlerTools import make_google_search
 from CrawlerTools import scrape_page_text
+from CrawlerTools import get_images
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from openai import OpenAI
@@ -276,14 +277,7 @@ def get_management_company(food_hall: str, browser):
 
 def get_photos(food_hall: str, browser):
     """Returns the urls to food hall photos."""
-    instruction = "The aim of your market research is to find out which company manages a specific food hall."
-    prompt = f'Find out the management company for "{food_hall}".'+' return the response as raw json: {"management_company": "CompanyName"} or {"data": null} if the details are not evident.'
-
-    google_link = make_google_search(
-        f'{food_hall} management company', browser, 1)[0]
-    webcontent = scrape_page_text(google_link, browser)
-
-    res = gpt_request(instruction, prompt + webcontent)
+    res = get_images(food_hall, browser)
     return res
 
 
@@ -349,7 +343,8 @@ def run_in_parallel(foodhall: str, id: str):
     all_tasks = [get_location, get_square_footage, get_number_of_food_stalls,
                  get_types_of_food_stalls, get_demographic, get_local_area_composition, get_public_transport,
                  get_parking_availability, get_foot_traffic_estimates, get_annual_visitor_count, get_lease_rates,
-                 get_occupancy_rate, get_year_established, get_renovation_history, get_owner, get_management_company]
+                 get_occupancy_rate, get_year_established, get_renovation_history, get_owner, get_management_company,
+                 get_photos]
     n = len(all_tasks)
 
     tasks1 = all_tasks[:4]
