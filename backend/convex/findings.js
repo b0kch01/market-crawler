@@ -17,11 +17,11 @@ export const updateFoodHall = mutation({
     typesOfFoodStalls: v.optional(v.array(v.string())),
     demographics: v.optional(v.string()),
     localAreaComposition: v.optional(v.string()),
-    accessibility: v.object({
+    accessibility: v.optional(v.object({
       wheelchairAccess: v.optional(v.boolean()),
       publicTransportAccess: v.optional(v.boolean()),
       parking: v.optional(v.boolean())
-    }),
+    })),
     footTraffic: v.optional(v.number()),
     annualVisitorCount: v.optional(v.number()),
     leaseRates: v.optional(v.object({

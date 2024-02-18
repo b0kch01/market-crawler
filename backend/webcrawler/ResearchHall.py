@@ -263,7 +263,7 @@ def updateDB(id: str, data: dict):
 def main(id: str, name: str, client):
     # Placeholder for browser initialization (e.g., Selenium WebDriver)
     # Replace None with actual browser initializer like webdriver.Chrome()
-    browser = webdriver.Safari()
+    browser = webdriver.Chrome()
 
     food_hall_name = name
 
