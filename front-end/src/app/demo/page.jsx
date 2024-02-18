@@ -6,9 +6,9 @@ import SearchBar from '@/components/searchbar'
 
 export default function DemoPage() {
   return (
-    <div className='bg-[#F4F4F4] flex flex-col p-25px h-[100vh]'>
+    <div className='flex flex-col p-25px pb-40'>
       <Navbar />
-      <div className='px-[10vw]'> 
+      <div className='px-[10vw]'>
         <SearchBar />
         <DataTableDemo />
         <SheetDemo />
