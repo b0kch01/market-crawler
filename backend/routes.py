@@ -11,7 +11,6 @@ load_dotenv()
 
 client = ConvexClient(os.getenv("CONVEX_URL"))
 
-
 app = Flask(__name__)
 
 
