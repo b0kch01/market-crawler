@@ -275,37 +275,41 @@ def get_management_company(food_hall: str, browser):
     res = gpt_request(instruction, prompt + webcontent)
     return res
 
+
 def get_photos(food_hall: str, browser):
     """Returns the urls to food hall photos."""
     res = get_images(food_hall, browser)
     return res
 
 
-def updateDB(id: str, data: dict):
+def updateDB(id: str, data: dict, client):
     """Updates the database with the data"""
-    requests.post(f'http://localhost:3333/crawler/update/{id}', json=data)
+    # requests.post(f'http://localhost:3333/crawler/update/{id}', json=data)
+    pass
 
 
-def browser_research(browser, tasks, foodhall, id: str):
+def browser_research(browser, tasks, foodhall, id: str, client):
     """Executes a list of research tasks using the given browser instance."""
     for task in tasks:
         try:
             # Assuming each task function takes a 'food_hall' string and a 'browser' object
             # You might need to adjust this call depending on how your task functions are structured
             task_response = task(foodhall, browser)
-            match = re.search(r"{.*}", task_response)
+            match = re.search(r"{.*}", task_response, flags=re.S)
             data = json.loads(match.group(0))
 
-            print(
-                f"Task {task.__name__} completed with response: {json.dumps(data, indent=2)}")
+            if "data" not in data:
+                print(f"{json.dumps(data, indent=2)}")
 
-            updateDB(foodhall, data)
+                updateDB(id, data, client)
+            else:
+                print(f"Data not found for {task.__name__}")
 
         except Exception as e:
             print(f"Error executing {task.__name__}: {e}")
 
 
-def run_in_parallel(foodhall: str, id: str):
+def run_in_parallel(foodhall: str, id: str, client):
     options = Options()
     options.page_load_strategy = 'eager'
 
@@ -340,11 +344,10 @@ def run_in_parallel(foodhall: str, id: str):
     browser4.set_window_size(width, height)
 
     # Define the tasks for each browser (quartering the total tasks)
-    all_tasks = [get_location, get_square_footage, get_number_of_food_stalls,
-                 get_types_of_food_stalls, get_demographic, get_local_area_composition, get_public_transport,
-                 get_parking_availability, get_foot_traffic_estimates, get_annual_visitor_count, get_lease_rates,
-                 get_occupancy_rate, get_year_established, get_renovation_history, get_owner, get_management_company,
-                 get_photos]
+    all_tasks = [get_location, get_square_footage, get_number_of_food_stalls, get_types_of_food_stalls,
+                 get_demographic, get_local_area_composition, get_public_transport, get_parking_availability,
+                 get_foot_traffic_estimates, get_annual_visitor_count, get_lease_rates, get_occupancy_rate,
+                 get_year_established, get_renovation_history, get_owner, get_management_company]
     n = len(all_tasks)
 
     tasks1 = all_tasks[:4]
@@ -354,13 +357,13 @@ def run_in_parallel(foodhall: str, id: str):
 
     # Create and start threads for each set of tasks
     thread1 = threading.Thread(
-        target=browser_research, args=(browser1, tasks1, foodhall, id))
+        target=browser_research, args=(browser1, tasks1, foodhall, id, client))
     thread2 = threading.Thread(
-        target=browser_research, args=(browser2, tasks2, foodhall, id))
+        target=browser_research, args=(browser2, tasks2, foodhall, id, client))
     thread3 = threading.Thread(
-        target=browser_research, args=(browser3, tasks3, foodhall, id))
+        target=browser_research, args=(browser3, tasks3, foodhall, id, client))
     thread4 = threading.Thread(
-        target=browser_research, args=(browser4, tasks4, foodhall, id))
+        target=browser_research, args=(browser4, tasks4, foodhall, id, client))
 
     thread1.start()
     thread2.start()
@@ -379,8 +382,6 @@ def run_in_parallel(foodhall: str, id: str):
     browser3.quit()
     browser4.quit()
 
-    pass
-
 
 if __name__ == '__main__':
-    run_in_parallel('alton food hall')
+    run_in_parallel('alton food hall', '1', client)
