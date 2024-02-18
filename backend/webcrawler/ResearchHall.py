@@ -347,8 +347,7 @@ def run_in_parallel(foodhall: str, id: str, client):
     all_tasks = [get_location, get_square_footage, get_number_of_food_stalls, get_types_of_food_stalls,
                  get_demographic, get_local_area_composition, get_public_transport, get_parking_availability,
                  get_foot_traffic_estimates, get_annual_visitor_count, get_lease_rates, get_occupancy_rate,
-                 get_year_established, get_renovation_history, get_owner, get_management_company]
-    n = len(all_tasks)
+                 get_year_established, get_renovation_history, get_owner, get_management_company, get_photos]
 
     tasks1 = all_tasks[:4]
     tasks2 = all_tasks[4:8]
@@ -365,15 +364,15 @@ def run_in_parallel(foodhall: str, id: str, client):
     thread4 = threading.Thread(
         target=browser_research, args=(browser4, tasks4, foodhall, id, client))
 
-    thread1.start()
-    thread2.start()
-    thread3.start()
+    # thread1.start()
+    # thread2.start()
+    # thread3.start()
     thread4.start()
 
     # Wait for all threads to complete
-    thread1.join()
-    thread2.join()
-    thread3.join()
+    # thread1.join()
+    # thread2.join()
+    # thread3.join()
     thread4.join()
 
     # Close browsers after completing tasks
