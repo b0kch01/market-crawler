@@ -19,7 +19,7 @@ export default function Home() {
                     return (
                       <span key={key} className="flex flex-col">
                         <span>{key}</span>
-                        <span>{obj[key]}</span>
+                        <span>{`${obj[key]}`}</span>
                       </span>
                     )
                   })
