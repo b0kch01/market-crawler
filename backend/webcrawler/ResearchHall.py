@@ -272,6 +272,18 @@ def get_management_company(food_hall: str, browser):
     res = gpt_request(instruction, prompt + webcontent)
     return res
 
+def get_photos(food_hall: str, browser):
+    """Returns the urls to food hall photos."""
+    instruction = "The aim of your market research is to find out which company manages a specific food hall."
+    prompt = f'Find out the management company for "{food_hall}".'+' return the response as raw json: {"management_company": "CompanyName"} or {"data": null} if the details are not evident.'
+
+    google_link = make_google_search(
+        f'{food_hall} management company', browser, 1)[0]
+    webcontent = scrape_page_text(google_link, browser)
+
+    res = gpt_request(instruction, prompt + webcontent)
+    return res
+
 
 def updateDB(id: str, data: dict):
     """Updates the database with the data"""
