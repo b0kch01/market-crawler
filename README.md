@@ -4,6 +4,12 @@ TreeHacks 2024 Project
 
 ## Getting Started
 
+### 0. Install npm
+
+```bash
+npm install
+```
+
 ### 1. Run Convex
 
 ```bash
