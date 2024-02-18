@@ -10,7 +10,7 @@ export default function Home() {
   const halls = useQuery(api.findings.getAll);
 
   return (
-    <main className="flex flex-col justify-center items-center min-h-screen w-full">
+    <main className="flex flex-col bg-[#D9D8D8] justify-center items-center min-h-screen w-full">
       {
         halls == undefined ? <span>Loading...</span> :
           halls.map((obj) => {
