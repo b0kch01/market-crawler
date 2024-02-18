@@ -52,6 +52,7 @@ export const updateFoodHall = mutation({
     })))
   },
   handler: async (ctx, args) => {
+    const { id } = args
     await ctx.db.patch(id, args)
   }
 })
