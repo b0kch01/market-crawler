@@ -17,7 +17,7 @@ app = Flask(__name__)
 @app.get("/crawler/new/<search_key>")
 def start_new_crawl(search_key):
     id = client.mutation("findings:createFoodHall", {"name": search_key})
-    ResearchHall.run_in_parallel(search_key, id)
+    ResearchHall.run_in_parallel(search_key, id, client=client)
     return "Done. Success."
 
 

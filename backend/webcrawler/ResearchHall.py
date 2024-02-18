@@ -1,6 +1,6 @@
-from CrawlerTools import make_google_search
-from CrawlerTools import scrape_page_text
-from CrawlerTools import get_images
+from webcrawler.CrawlerTools import make_google_search
+from webcrawler.CrawlerTools import scrape_page_text
+from webcrawler.CrawlerTools import get_images
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from openai import OpenAI
@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 import os
 import requests
 import threading
-import tkinter
+import screeninfo
 import re
 import json
 
@@ -32,6 +32,8 @@ def gpt_request(gpt_instruction: str, user_prompt: str):
 
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
+        seed=42,
+        temperature=0,
         messages=[
             {"role": "system", "content": GPT_INSTRUCTIONS},
             {"role": "user", "content": user_prompt}
@@ -284,29 +286,27 @@ def get_photos(food_hall: str, browser):
 
 def updateDB(id: str, data: dict, client):
     """Updates the database with the data"""
-    # requests.post(f'http://localhost:3333/crawler/update/{id}', json=data)
+    print(f"Updating database with {data.keys()}")
+    client.mutation("findings:updateFoodHall", {"id": id, "fields": data})
     pass
 
 
 def browser_research(browser, tasks, foodhall, id: str, client):
     """Executes a list of research tasks using the given browser instance."""
     for task in tasks:
-        try:
-            # Assuming each task function takes a 'food_hall' string and a 'browser' object
-            # You might need to adjust this call depending on how your task functions are structured
-            task_response = task(foodhall, browser)
-            match = re.search(r"{.*}", task_response, flags=re.S)
-            data = json.loads(match.group(0))
 
-            if "data" not in data:
-                print(f"{json.dumps(data, indent=2)}")
+        # Assuming each task function takes a 'food_hall' string and a 'browser' object
+        # You might need to adjust this call depending on how your task functions are structured
+        task_response = task(foodhall, browser)
+        string = task_response.replace("```json", "").replace("```", "")
 
-                updateDB(id, data, client)
-            else:
-                print(f"Data not found for {task.__name__}")
+        print(string)
 
-        except Exception as e:
-            print(f"Error executing {task.__name__}: {e}")
+        if '{"data": null}' not in string:
+            data = json.loads(string)
+            updateDB(id, data, client)
+        else:
+            print(f"Data not found for {task.__name__}")
 
 
 def run_in_parallel(foodhall: str, id: str, client):
@@ -320,11 +320,9 @@ def run_in_parallel(foodhall: str, id: str, client):
     browser4 = webdriver.Chrome(options=options)
 
     # Set window sizes for a 1920x1080 resolution, adjust these values based on your actual screen resolution
-    root = tkinter.Tk()
-    width = root.winfo_screenwidth()//2
-    height = root.winfo_screenheight()//2
-    # width = 1920 // 2
-    # height = 1080 // 2
+    screen = screeninfo.get_monitors()[0]
+    width = screen.width // 2
+    height = screen.height // 2
 
     # Position the windows in a 4-quadrant layout
     # Top-Left
@@ -364,15 +362,15 @@ def run_in_parallel(foodhall: str, id: str, client):
     thread4 = threading.Thread(
         target=browser_research, args=(browser4, tasks4, foodhall, id, client))
 
-    # thread1.start()
-    # thread2.start()
-    # thread3.start()
+    thread1.start()
+    thread2.start()
+    thread3.start()
     thread4.start()
 
     # Wait for all threads to complete
-    # thread1.join()
-    # thread2.join()
-    # thread3.join()
+    thread1.join()
+    thread2.join()
+    thread3.join()
     thread4.join()
 
     # Close browsers after completing tasks

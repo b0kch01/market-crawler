@@ -6,8 +6,10 @@ from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 
 import time
+import json
 
-def valid_url(url:str) -> bool:
+
+def valid_url(url: str) -> bool:
     """returns whether this url is valid for search"""
     unnecessary_links = (
         'https://www.instagram.com',
@@ -16,13 +18,15 @@ def valid_url(url:str) -> bool:
     )
     return url and not url.startswith(unnecessary_links)
 
+
 def get_google_alert_links(search_key: str, browser) -> list[str]:
     """Given search key, returns a list of todays google alerts of the search_key"""
     google_alerts_url = 'https://www.google.com/alerts#1:0'
 
     browser.get(google_alerts_url)
 
-    elem = browser.find_element(By.XPATH, "//input[@aria-label='Create an alert about...']")
+    elem = browser.find_element(
+        By.XPATH, "//input[@aria-label='Create an alert about...']")
     elem.send_keys(search_key)
 
     WebDriverWait(browser, 10).until(
@@ -41,22 +45,11 @@ def get_google_alert_links(search_key: str, browser) -> list[str]:
                 links.append(url)
 
     return links
+
+
 def make_google_search(search_query: str, browser, num_links=3):
     """makes a google search and returns the top 'num_links' links"""
-    browser.get('https://www.google.com')
-    assert 'Google' in browser.title
-
-    # Find the Google search box and enter the search query
-    elem = browser.find_element(By.NAME, 'q')  # Google's search box name is 'q'
-
-    # Input search input
-    elem.send_keys(search_query + Keys.RETURN)
-
-    # Wait for search results to load
-    WebDriverWait(browser, 10).until(
-        EC.presence_of_element_located((By.ID, 'search'))
-        # Google's search results are within an element with ID 'search'
-    )
+    browser.get(f'https://www.google.com/search?q={search_query}')
 
     # Collect URLs from search results
     links = []
@@ -72,9 +65,11 @@ def make_google_search(search_query: str, browser, num_links=3):
     links = links[:num_links]
 
     return links
-def scrape_page_text(url:str, browser) -> str:
+
+
+def scrape_page_text(url: str, browser) -> str:
     """Returns text from specified URL, pass browser in"""
-    text=""
+    text = ""
     try:
         # Navigate to the URL
         browser.get(url)
@@ -100,7 +95,8 @@ def scrape_page_text(url:str, browser) -> str:
         # break into lines and remove leading and trailing space on each
         lines = (line.strip() for line in text.splitlines())
         # break multi-headlines into a line each
-        chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+        chunks = (phrase.strip()
+                  for line in lines for phrase in line.split("  "))
         # drop blank lines
         text = '\n'.join(chunk for chunk in chunks if chunk)
 
@@ -110,7 +106,8 @@ def scrape_page_text(url:str, browser) -> str:
 
     return text
 
-def get_all_tags_links_on_page(url:str, browser) -> list[str]:
+
+def get_all_tags_links_on_page(url: str, browser) -> list[str]:
     """returns all links on page of website -> great for smart navigation"""
     res = []
     try:
@@ -125,13 +122,15 @@ def get_all_tags_links_on_page(url:str, browser) -> list[str]:
         links = browser.find_elements(By.CSS_SELECTOR, 'a')
         print(links)
         for link in links:
-            res.append({'label':link.text, 'link':link.get_attribute('href')})
+            res.append(
+                {'label': link.text, 'link': link.get_attribute('href')})
     finally:
         pass
 
-    return res;
+    return res
 
-def get_images(foodhall:str, browser)->list[str]:
+
+def get_images(foodhall: str, browser) -> list[str]:
     """given google search link, return photo images of food hall"""
     try:
         search_url = f'https://www.google.com/search?hl=en&tbm=isch&q={foodhall}'
@@ -140,21 +139,26 @@ def get_images(foodhall:str, browser)->list[str]:
         time.sleep(2)  # Adjust sleep time as necessary
 
         # Find image elements - Adjust the selector if necessary
-        images = browser.find_elements(By.CSS_SELECTOR, 'img')
+        images = browser.find_elements(By.CSS_SELECTOR, 'a > div > img')
         image_urls = []
         for image in images:
             # Get the src of the image
             src = image.get_attribute('src')
-            if src and (src.endswith('.png') or src.endswith('.jpeg') or src.endswith('.jpg')):
-                image_urls.append(src)
-            if len(image_urls) == 10:
-                break;
+            if src:
+                image_urls.append({
+                    "url": src,
+                    "alt": image.get_attribute('alt')
+                })
 
-        return image_urls
+            if len(image_urls) == 10:
+                break
+
+        # return json string of image urls with key 'images'
+        return json.dumps({"images": image_urls})
     finally:
         pass
 
 
 if __name__ == '__main__':
     browser = webdriver.Chrome()
-    print(get_images('alton food hall',browser))
+    print(get_images('alton food hall', browser))
