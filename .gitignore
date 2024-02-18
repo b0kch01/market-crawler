@@ -6,7 +6,10 @@ __pycache__
 
 # js frontend
 node_modules
+# local env files
+.env*.local
 
 # vscode
 .vscode
 .env
+.env.local
