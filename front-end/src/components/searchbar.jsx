@@ -15,9 +15,14 @@ const SearchBar = () => {
 
   // Function to call API
   const callApi = (search = input) => {
-    const url = `https://localhost:3333/crawler/new/${search}`;
+    const url = `http://127.0.0.1:3333/crawler/new/${search}`;
     
-    fetch(url)
+    fetch(url, {
+      method: "GET",
+      xhrFields: {
+       withCredentials: true
+    },
+    })
       .then(response => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
