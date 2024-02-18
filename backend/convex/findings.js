@@ -3,7 +3,9 @@ import { v } from "convex/values"
 
 export const getAll = query({
   handler: async (ctx) => {
-    return await ctx.db.query("food_halls").collect()
+    return await ctx.db.query("food_halls")
+      .order("desc")
+      .collect()
   }
 })
 
@@ -15,7 +17,7 @@ export const updateFoodHall = mutation({
       location: v.optional(v.string()),
       city: v.optional(v.string()),
       state: v.optional(v.string()),
-      year_established: v.optional(v.number()),
+      year_established: v.optional(v.union(v.null(), v.number())),
       population_density: v.optional(v.union(v.string(), v.number())),
       median_income: v.optional(v.string()),
       age_distribution: v.optional(v.any()),
@@ -30,7 +32,8 @@ export const updateFoodHall = mutation({
       retail: v.optional(v.union(v.number(), v.null())),
       management_company: v.optional(v.string()),
       parking_spots: v.optional(v.number()),
-      parking_fees: v.optional(v.union(v.string(), v.null())),
+      parking_fees: v.optional(v.union(v.string())),
+      renovation_history: v.optional(v.string()),
       peak_time_availability: v.optional(v.string()),
       contact: v.optional(v.string()),
       owner: v.optional(v.string()),
