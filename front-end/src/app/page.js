@@ -11,11 +11,19 @@ export default function Home() {
     <main className="flex flex-col justify-center items-center min-h-screen w-full">
       {
         halls == undefined ? <span>Loading...</span> :
-          halls.map(({ _id, _creationTime, name }) => {
+          halls.map((obj) => {
             return (
-              <span key={_id} className="flex gap-4 border">
-                <span>{(new Date(_creationTime)).toLocaleTimeString()}</span>
-                <span>{name}</span>
+              <span key={obj._id} className="flex gap-4 border">
+                {
+                  Object.keys(obj).map((key) => {
+                    return (
+                      <span key={key} className="flex flex-col">
+                        <span>{key}</span>
+                        <span>{obj[key]}</span>
+                      </span>
+                    )
+                  })
+                }
               </span>
             )
           })
