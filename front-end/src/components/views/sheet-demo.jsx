@@ -12,6 +12,7 @@ import {
 	SheetTrigger,
 } from "@/components/ui/sheet"
 import NeighborhoodsInfo from "./neighborhoods-info"
+import { ChevronsRight } from "lucide-react"
 
 export function SheetDemo() {
 	return (
@@ -20,8 +21,11 @@ export function SheetDemo() {
 				<Button variant="outline">Open</Button>
 			</SheetTrigger>
 
-			<SheetContent className="overflow-y-scroll h-full">
-				<SheetClose>hello</SheetClose><NeighborhoodsInfo />
+			<SheetContent className="overflow-y-scroll h-full p-0">
+				<SheetClose className="absolute top-0 z-30 p-4">
+					<ChevronsRight className="bg-white shadow-md border rounded" />
+				</SheetClose>
+				<NeighborhoodsInfo />
 			</SheetContent>
 		</Sheet>
 	)
