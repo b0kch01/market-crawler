@@ -1,13 +1,15 @@
 from CrawlerTools import make_google_search
 from CrawlerTools import scrape_page_text
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
 import requests
 import threading
 import tkinter
-
+import re
+import json
 
 load_dotenv()
 open_ai_key = os.getenv('GPT_API_KEY')
@@ -290,24 +292,34 @@ def updateDB(id: str, data: dict):
     requests.post(f'http://localhost:3333/crawler/update/{id}', json=data)
 
 
-def browser_research(browser, tasks, foodhall):
+def browser_research(browser, tasks, foodhall, id: str):
     """Executes a list of research tasks using the given browser instance."""
     for task in tasks:
         try:
             # Assuming each task function takes a 'food_hall' string and a 'browser' object
             # You might need to adjust this call depending on how your task functions are structured
             task_response = task(foodhall, browser)
-            print(task.__name__ + f': {task_response}')
+            match = re.search(r"{.*}", task_response)
+            data = json.loads(match.group(0))
+
+            print(
+                f"Task {task.__name__} completed with response: {json.dumps(data, indent=2)}")
+
+            updateDB(foodhall, data)
+
         except Exception as e:
             print(f"Error executing {task.__name__}: {e}")
 
 
-def run_in_parallel(foodhall):
+def run_in_parallel(foodhall: str, id: str):
+    options = Options()
+    options.page_load_strategy = 'eager'
+
     # Initialize browser instances
-    browser1 = webdriver.Chrome()
-    browser2 = webdriver.Chrome()
-    browser3 = webdriver.Chrome()
-    browser4 = webdriver.Chrome()
+    browser1 = webdriver.Chrome(options=options)
+    browser2 = webdriver.Chrome(options=options)
+    browser3 = webdriver.Chrome(options=options)
+    browser4 = webdriver.Chrome(options=options)
 
     # Set window sizes for a 1920x1080 resolution, adjust these values based on your actual screen resolution
     root = tkinter.Tk()
@@ -334,8 +346,10 @@ def run_in_parallel(foodhall):
     browser4.set_window_size(width, height)
 
     # Define the tasks for each browser (quartering the total tasks)
-    all_tasks = [get_location, get_square_footage, get_number_of_food_stalls, get_types_of_food_stalls, get_demographic, get_local_area_composition, get_public_transport, get_parking_availability,
-                 get_foot_traffic_estimates, get_annual_visitor_count, get_lease_rates, get_occupancy_rate, get_year_established, get_renovation_history, get_owner, get_management_company]
+    all_tasks = [get_location, get_square_footage, get_number_of_food_stalls,
+                 get_types_of_food_stalls, get_demographic, get_local_area_composition, get_public_transport,
+                 get_parking_availability, get_foot_traffic_estimates, get_annual_visitor_count, get_lease_rates,
+                 get_occupancy_rate, get_year_established, get_renovation_history, get_owner, get_management_company]
     n = len(all_tasks)
 
     tasks1 = all_tasks[:4]
@@ -345,13 +359,13 @@ def run_in_parallel(foodhall):
 
     # Create and start threads for each set of tasks
     thread1 = threading.Thread(
-        target=browser_research, args=(browser1, tasks1, foodhall))
+        target=browser_research, args=(browser1, tasks1, foodhall, id))
     thread2 = threading.Thread(
-        target=browser_research, args=(browser2, tasks2, foodhall))
+        target=browser_research, args=(browser2, tasks2, foodhall, id))
     thread3 = threading.Thread(
-        target=browser_research, args=(browser3, tasks3, foodhall))
+        target=browser_research, args=(browser3, tasks3, foodhall, id))
     thread4 = threading.Thread(
-        target=browser_research, args=(browser4, tasks4, foodhall))
+        target=browser_research, args=(browser4, tasks4, foodhall, id))
 
     thread1.start()
     thread2.start()
