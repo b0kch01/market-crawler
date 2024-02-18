@@ -1,7 +1,6 @@
 from flask import Flask, request, Response
-from webcrawler import CrawlerTools
+from webcrawler import ResearchHall
 from selenium import webdriver
-from models import FoodHall
 
 import os
 from dotenv import load_dotenv
@@ -16,37 +15,11 @@ client = ConvexClient(os.getenv("CONVEX_URL"))
 app = Flask(__name__)
 
 
-@app.post("/db/add")
-def add_food_hall():
-    if not request.json:
-        return Response("No data provided", status=400)
-
-    client.mutation("findings:createFoodHall", request.json)
-    return "done"
-
-
-@app.route("/")
-def hello_world():
-    res = {
-        "message": "why hello there!",
-        "other_stuff": "you should give us da dub!"
-    }
-    return res
-
-
-@app.get("/crawler/<search_key>")
-def google_search(search_key):
-    driver = webdriver.Chrome()
-    links = CrawlerTools.make_google_search(search_key, driver)
-    return links
-
-
-@app.get("/crawler/research/<food_hall_name>")
-def research(food_hall_name):
-    driver = webdriver.Chrome()
-
-    links = CrawlerTools.make_google_search(food_hall_name, driver)
-    return links
+@app.get("/crawler/new/<search_key>")
+def start_new_crawl(search_key):
+    id = client.mutation("findings:createFoodHall", {"name": search_key})
+    ResearchHall.main(id, search_key, client)
+    return "Done. Success."
 
 
 if __name__ == "__main__":

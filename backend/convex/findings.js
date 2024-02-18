@@ -63,9 +63,10 @@ export const createFoodHall = mutation({
   },
   handler: async (ctx, args) => {
     const { name, location } = args
-    await ctx.db.insert("food_halls", {
+    const newID = await ctx.db.insert("food_halls", {
       name: name,
       location: location
     })
+    return newID
   }
 })
