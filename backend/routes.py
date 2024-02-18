@@ -21,5 +21,14 @@ def start_new_crawl(search_key):
     return "Done. Success."
 
 
+@app.route("/done")
+def finish_page():
+    # html
+    return """
+    <body style="width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; font-size: 50px; font-family: monospace">Done</body>
+    
+    """
+
+
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=3333)

@@ -9,7 +9,6 @@ export const getAll = query({
 
 export const updateFoodHall = mutation({
   args: {
-    id: v.id("food_halls"),
     name: v.optional(v.string()),
     location: v.optional(v.string()),
     squareFootage: v.optional(v.number()),
@@ -38,7 +37,7 @@ export const updateFoodHall = mutation({
       name: v.optional(v.string()),
       contact: v.optional(v.string())
     }))),
-    company: v.optional(v.object({
+    managementCompany: v.optional(v.object({
       name: v.optional(v.string()),
       contact: v.optional(v.string())
     })),
@@ -53,7 +52,7 @@ export const updateFoodHall = mutation({
   },
   handler: async (ctx, args) => {
     const { id } = args
-    await ctx.db.patch(id, args)
+    await ctx.db.patch(id, { ...args, id: undefined })
   }
 })
 
