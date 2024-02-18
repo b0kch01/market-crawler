@@ -144,6 +144,8 @@ export function DataTableDemo() {
   const [columnVisibility, setColumnVisibility] = React.useState({})
   const [rowSelection, setRowSelection] = React.useState({})
 
+  const [focusedData, setFocusedData] = React.useState({})
+
   const data = useQuery(api.findings.getAll)
 
   const table = useReactTable({
@@ -171,11 +173,11 @@ export function DataTableDemo() {
 
   return (
     <Sheet>
-      <SheetContent className="">
-        {/* <SheetClose className="absolute top-0 z-30 p-4">
+      <SheetContent className="overflow-y-scroll h-full p-0">
+        <SheetClose className="absolute top-0 z-30 p-4">
           <ChevronsRight className="bg-white shadow-md border rounded" />
-        </SheetClose> */}
-        {/* <NeighborhoodsInfo /> */}
+        </SheetClose>
+        <NeighborhoodsInfo data={focusedData} />
       </SheetContent>
       <div className="w-full">
         <div className="flex items-center py-4">

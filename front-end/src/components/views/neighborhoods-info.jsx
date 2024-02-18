@@ -3,7 +3,7 @@
  * @see https://v0.dev/t/E2JYQSvSgAe
  * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
  */
-export default function NeighborhoodsInfo() {
+export default function NeighborhoodsInfo({ data }) {
 	return (
 		<div className="bg-white rounded-lg max-w-sm mx-auto pb-[20vh]">
 			<div className="bg-hero-pattern overflow-hidden bg-gradient-to-d md:bg-gradient-to-d w-full">
@@ -27,8 +27,8 @@ export default function NeighborhoodsInfo() {
 				<div className="flex items-center mb-4 gap-4">
 					<img src="https://source.unsplash.com/random" className="object-cover w-12 h-12 rounded border" />
 					<div className="flex flex-col">
-						<h1 className="text-lg font-bold">State Street Market</h1>
-						<span className="text-xs text-gray-500">2004 - Present</span>
+						<h1 className="text-lg font-bold">{data.name}</h1>
+						<span className="text-xs text-gray-500">{data.year_established} - Present</span>
 					</div>
 				</div>
 				<div className="mb-4">
