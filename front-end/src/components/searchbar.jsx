@@ -34,11 +34,34 @@ const SearchBar = () => {
       });
   };
 
+  const callScoopAPI = () => {
+    const url = `http://127.0.0.1:3333/crawler/new_halls_today`;
+    fetch(url, {
+      method: "GET"
+    })
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then(data => {
+      console.log(data)
+    })
+    .catch(error => {
+      console.log('Error fetching scoop: ', error)
+    })
+  }
+
   // Function to handle button click
   const handleButtonClick = () => {
     callApi(); // Make API call with the current input value
     setInput(''); // Reset input field after search
   };
+
+  const handleButtonClickScoopToday = () => {
+    callScoopAPI()
+  }
 
   return (
     <div className="flex w-full h-[50px] items-center gap-2 space-x-2 py-[60px] px-[10vw]">
@@ -54,9 +77,15 @@ const SearchBar = () => {
         />
       </div>
       <div onClick={handleButtonClick}>
-        <Button className='h-[56px] w-[200px] gap-2 bg-[#FF6B00] rounded-2xl' type="button"> {/* Changed type to "button" */}
+        <Button className='h-[56px] w-[200px] gap-2 bg-black rounded-2xl' type="button"> {/* Changed type to "button" */}
           <img src='sparkle.svg' alt='crawl' /> {/* Added alt text */}
           <span className='text-base'>New Crawler</span>
+        </Button>
+      </div>
+      <div onClick={handleButtonClickScoopToday}>
+        <Button className='h-[56px] w-[200px] gap-2 bg-[#FF6B00] rounded-2xl' type="button"> {/* Changed type to "button" */}
+          <img src='sparkle.svg' alt='crawl' /> {/* Added alt text */}
+          <span className='text-base'>Today's Scoop</span>
         </Button>
       </div>
     </div>

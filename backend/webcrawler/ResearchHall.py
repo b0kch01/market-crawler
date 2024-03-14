@@ -27,6 +27,10 @@ client = OpenAI(api_key=open_ai_key)
 
 class ResearchHall:
     def __init__(self, client, id: str, food_hall: str):
+        food_hall = food_hall.strip().lower()
+        if 'food hall' not in food_hall:
+            food_hall = f'{food_hall} food hall'
+
         self.client = client
         self.id = id
         self.food_hall = food_hall
@@ -273,6 +277,7 @@ class ResearchHall:
         print(f"Updating database with {data.keys()}")
         self.client.mutation("findings:updateFoodHall",
                              {"id": self.id, "fields": data})
+        # MONGO DB changes here 
         pass
 
     def browser_research(self, browser, tasks):

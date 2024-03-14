@@ -2,10 +2,22 @@ from flask import Flask, request, Response
 from flask_cors import CORS, cross_origin
 from webcrawler import ResearchHall
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from webcrawler import CrawlerTools
 import threading
 
 import os
+
 from dotenv import load_dotenv
+from openai import OpenAI
+load_dotenv()
+open_ai_key = os.getenv('GPT_API_KEY')
+gpt_client = OpenAI(api_key=open_ai_key)
+from dotenv import load_dotenv
+
+import time
+import json
+
 from convex import ConvexClient
 
 load_dotenv(".env.local")
@@ -31,6 +43,36 @@ def start_new_crawl(search_key):
 
     return "{ 'status': 'success' }"
 
+
+def get_relevant_halls():
+    """returns list of relevant halls"""
+    options = Options()
+    options.page_load_strategy = 'eager'
+
+    # Initialize browser instances
+    browser = webdriver.Chrome(options=options)
+    new_food_hall_article_links = CrawlerTools.scrape_google_alert(browser=browser)
+    browser.quit()
+
+    res = CrawlerTools.determine_food_halls_in_parallel(new_food_hall_article_links)
+    
+    return {
+        "relevant_halls": res
+    }
+
+@app.get("/crawler/new_halls_today")
+@cross_origin()
+def get_new_halls_today():
+    """Reads from Google alerts and adds food halls to database"""
+    hall_objects = get_relevant_halls()["relevant_halls"][:3]
+
+    for hall in hall_objects:
+        name = hall['food_hall_name']
+        start_new_crawl(name)
+        # need to add a wait for each iteration 
+
+    # check database for valid research 
+    return "{ 'status': 'success' }"
 
 @app.route("/done")
 def finish_page():
